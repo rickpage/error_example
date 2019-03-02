@@ -1,0 +1,1102 @@
+<html>
+<head>
+  <style>
+  input {
+    margin: 1em;
+  }
+  #div_nav {
+    margin-top: 1.0em;
+    margin-bottom: 1.5em;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    padding: 0.25em;
+  }
+  </style>
+  <style>
+.delivery {
+  border: solid black 2px;
+  display: block;
+  padding: 1em;
+  margin: 5px;
+}
+#customer_info {
+  border: solid 2px black;
+  padding: 0.2em;
+}
+.time-div {
+  font-weight: bold;
+  padding: 0.5em;
+  margin: 0.5em;
+  border: solid black 2px;
+}
+</style>
+  <title>Bulk Sale</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="file:///android_asset/www/js/util/datehelp.js"></script>
+</head>
+<body>
+  <h5>Bulk: Point of Sale</h5>
+<div>
+  <div id="page_1"> <!-- select customer -->
+    <div>
+      <button class="" style="width: 30%; margin-left: 1em; float: right"
+           id="home_button_1" onclick="sfandroidapp.launchHome()">
+           Home
+      </button>
+      <!-- <select id="customer_select">
+      </select> -->
+      <br>
+      &nbsp;
+      <button class="" style="width: 30%; margin-left: 1em;"
+             id="next_button_page_1" onclick="forward(); return false;">
+        Next
+      </button>
+    </div>
+    <!-- <div>
+      <button onclick="toggleTimeChange(); return false;">Change Delivery Times</button>
+    </div> -->
+    <div>
+      <h4>Pending Deliveries</h4>
+      <div id="delivery_list">
+      </div>
+    </div>
+
+    <div>
+        <h4>Completed Deliveries</h4>
+        <div id="completed_delivery_list">
+        </div>
+    </div>
+
+    <div>
+      <h4>Tomorrow's Deliveries</h4>
+      <div id="tmrw">
+      </div>
+    </div>
+
+    <div>
+      <a href="file:///android_asset/www/bulk_previous_invoices.html">
+        View Previously Stored Invoices here
+      </a>
+      <br>
+
+      <small>View and print previous invoices.
+        Only invoices from this device will show.</small>
+    </div>
+<br>
+    <div>
+      <button onclick="SFPrintDailyBulk(); return false;">
+        Print Summary for Today
+      </button>
+    </div>
+  </div>
+  <div id="page_2" style="display: none;"> <!-- Invoice -->
+    Name
+    <div id="invoice_display_name">
+    </div>
+    <div class="modal-content">
+      <div class="modal-body">
+        <div id="invoice_message"></div>
+        <div id="invoice_form">
+          <div id="invoice_only">
+            <b>Items Sold</b>
+            <div>Gallons Sold *</div>
+            &nbsp;<input  value=""  class="calc_total auto_highlight" id="gallons" type="number" min=0 max=1000000.00 step=0.01  />
+            <div>Start &#37;</div>
+            &nbsp;<input  value="0"  class=" auto_highlight" id="start_pct" type="number" min=0 max=99 step=1  />
+            <div>End &#37;</div>
+            &nbsp;<input  value="0"  class=" auto_highlight" id="end_pct" type="number" min=0 max=100 step=1  />
+            <div>Price per gallon</div>
+            $<input value=""
+                    class="calc_total auto_highlight"
+                    id="ppg"
+                    type="number"
+                    onchange="this.value = parseFloat(this.value).toFixed(2);"
+                    min=1.0
+                    max=1000000.00 step=0.01  />
+
+            <div>
+              <input type="checkbox" name="check_pressure_test" id="check_pressure_test" />
+              <label for="check_pressure_test">Pressure Test Performed</label>
+            </div>
+
+            <div>
+              <input type="checkbox" name="check_tank_valve_off" id="check_tank_valve_off" />
+              <label for="check_tank_valve_off">Tank Valve is OFF</label>
+            </div>
+            <div>
+              <input type="checkbox" name="check_please_call" id="check_please_call" />
+              <label for="check_please_call">Please Call Main Office</label>
+            </div>
+            <div>
+              <label for="notes_for_customer">Notes for Customer</label>
+              <br>
+              <textarea rows=2 name="notes_for_customer" id="notes_for_customer">
+              </textarea>
+            </div>
+
+            <div>Additional items <small>(enter any text)</small></div>
+            &nbsp;<input id="extras" type="text" />
+
+
+          </div>
+          <div class="hide_for_payment">
+              <div>Total price of additional charges</div>
+              <b>$</b><input class="calc_total" id="extra_costs"
+                 value="" type="number" min=0 max=1000000.00 step=0.01  />
+              <br>
+          </div>
+
+          <!--
+          <b class="hide_for_balance">Payment Info</b>
+
+         -->
+          <div class="hide_for_payment">
+            <h4>Subtotal:&nbsp;$<span id="subtotal">0.00</span></h4>
+          </div>
+          <!-- show for all 3 -->
+          <div>
+            <h4>Current Balance:&nbsp;$<span id="current_balance_invoice">0.00</span></h4>
+          </div>
+          <div class="hide_for_balance">
+            <div>
+              <h4>Payment Amount: &nbsp;<br class="mobile">$<input id="payment_amount"
+                style="border: none;" class="auto_highlight"
+              value="0.00" type="number" min=0 max=1000000.00 step=0.01
+              oninput="updatePaymentAmount(); return false;"/></span></h4>
+            </div>
+            <div id="invoice_credit_card_info" >
+              <h4>Credit Card Fee:&nbsp;$<span id="credit_card_fee">0.00</span></h4>
+              <h4>(Pay in Full:&nbsp;$<span id="pay_in_full">0.00</span>)</h4>
+            </div>
+          </div>
+          <!-- for all 3 -->
+          <div>
+            <h4>Updated Balance:&nbsp;$<span id="balance_after_payment">0.00</span></h4>
+          </div>
+          <div class="hide_for_balance">
+            <b>Customer Payment </b>
+            <div>
+              Payment Method
+            </div>
+            <div style="margin-bottom: 1em;">
+              <select id="payment_method">
+                <option selected="selected" value="0">CASH</option>
+                <option value="1">CHECK</option>
+                <option  value="2">CREDIT CARD</option>
+              </select>
+            </div>
+            <div>
+              Payment COLLECTED
+            </div>
+            <div>
+              $<input id="payment_collected"
+              class="auto_highlight" oninput="updatePaymentCollected(); return false;"
+                value="" type="number" min=0 max=1000000.00 step=0.01 />
+            </div>
+            <div id="check_number_display">
+              <div>
+                Check Number
+              </div>
+              <input id="check_number"/>
+            </div>
+        </div>
+      </div>
+
+     </div>
+   </div>
+ </div> <!-- end page 2 -->
+  <div id="page_3"> <!-- confirmation -->
+    <h3>Press "Save Invoice" to Submit this Invoice</h3>
+    <p>Press Back to make adjustments</p>
+    <div>Invoice Total:</div>
+    <div>$<span id="subtotal_with_fees"></span></div>
+    <div>Collected Payment:</div>
+    <div>$<span id="confirm_payment_collected"></span></div>
+    <div>Customer Updated Balance:</div>
+    <div>$<span id="updated_balance"></span></div>
+    <div style="margin: 1em;">
+      <button id="invoice_save_button" onclick="driverHandleInvoice()"
+      style="padding: 1em; border-radius: 0.5em;">
+          Save Invoice
+      </button>
+    </div>
+  </div>
+  <div id="page_4"> <!-- success message  -->
+
+      <button class="" style="width: 30%; margin-left: 1em; float: right"
+           id="home_button_4" onclick="fetchBulkDeliveries(); sfandroidapp.launchHome()">
+           Home
+      </button>
+      <h3 id="end_status">Transaction Successful!</h3>
+      <span>Customer's Current Balance:&nbsp;$</span>
+      <span id="current_balance_after_invoice"></span>
+
+      <div style="margin: 1em; padding: 1em;">
+<p>Mark Delivery Complete when you are finished entering invoices, payments, and/or partial payments.</p>
+      </div>
+      <div style="margin: 1em; padding: 1em;">
+        <button id="delivery_complete_button"
+          style="padding: 1em; border-radius: 0.5em;"
+          onclick="markDeliveryComplete(); fetchBulkDeliveries(); return false;">
+          Mark Delivery Complete
+        </button>
+        <div style="margin: 1em; padding: 1em;">
+          <p>Or go back for now to take additional payments and mark delivery complete afterwards.</p>
+        </div>
+        <button id=""
+          style="padding: 1em; margin:1em; border-radius: 0em;"
+          onclick="fetchBulkDeliveries(); SFNavigateBulkSale()">
+          New Delivery / Additional Payment
+        </button>
+
+        <!-- <button id=""
+         onclick="SFNavigateBulkSale()"
+          style="padding: 1em; margin: 1em; border-radius: 0em;">
+          Back to Delivery Queue
+        </button> -->
+
+        <button id="printButton"
+          onclick="doPrintInvoiceByLocalStorageKey()"
+          style="padding: 1em; margin: 1em; border-radius: 0em;">
+          Print This Invoice
+        </button>
+
+
+        <button id="emailButton"
+          onclick="checkEmail()"
+          style="padding: 1em; margin: 1em; border-radius: 0em;">
+          Email Invoice Receipt
+        </button>
+
+
+      </div>
+  </div>
+
+  <div id="div_nav">
+      <button class="" style="width: 30%; margin-left: 1em; float: left"
+           id="back_button" onclick="backward(); return false;">
+      Back
+    </button>
+    <button class="" style="width: 30%; margin-left: 1em;"
+           id="next_button" onclick="forward(); return false;">
+      Next
+    </button>
+  </div>
+</div>
+</body>
+<script src="file:///android_asset/www/js/jquery.1.11.3.min.js"></script>
+<script src="file:///android_asset/www/js/moneyhelp.js"></script>
+<script src="file:///android_asset/www/js/sfandroidapp.js"></script>
+<script src="file:///android_asset/www/js/util/validateemail.js"></script>
+<script>
+
+// Globals / window
+
+var COMPLETE=4;
+var CANCELED=8;
+var customer_map = {};
+var current_customer_id = -1;
+var delivery_map = {};
+var finished_delivery_map = {};
+var printable_invoice_key = null;
+var current_delivery_id = -1;
+
+function doPrintInvoiceByLocalStorageKey(){
+  if (printable_invoice_key == null){
+    console.log("Cannot print");
+    $("#printButton").text("ERROR: No invoice data.");
+    return;
+  }
+  var wasSent = SFAPPPrintInvoiceByLocalStorageKey(printable_invoice_key);
+  if (wasSent){
+    $("#printButton").text("Receipt Sent to Printer").css("background-color","#9F9");
+  } else {
+    $("#printButton").text("Error Printing. Press to Retry.").css("background-color","#F99");
+  }
+}
+</script>
+
+<script>
+function doPage2(){
+  console.log("-2-");
+  $("#next_button").show();
+  $("#back_button").show();
+}
+function doPage3(){
+  console.log("-3-");
+  $("#next_button").hide();
+}
+function doPage4(){
+  console.log("-4-");
+  $("#next_button").hide();
+  $("#back_button").hide();
+}
+var divs = ["#page_1","#page_2","#page_3","#page_4"];
+var nav_callbacks = {
+  "#page_2":doPage2
+  , "#page_3":doPage3
+  , "#page_4":doPage4
+}
+function doCallback(i){
+  var fn=nav_callbacks[divs[i]];
+  if ( null != fn && typeof(fn) != 'undefined'){
+    fn();
+  }
+}
+var currentDivIdx = 0;
+function forward(){
+  var i = currentDivIdx + 1;
+  if ( i < divs.length ){
+    var $old = $(divs[currentDivIdx]);
+    var $nw = $(divs[i]);
+    $old.hide()
+    $nw.show()
+    currentDivIdx+=1;
+    doCallback(i);
+  }
+}
+function backward(){
+  var i = currentDivIdx - 1;
+  if ( i >= 0 ){
+    var $old = $(divs[currentDivIdx]);
+    var $nw = $(divs[i]);
+    $old.hide()
+    $nw.show()
+    currentDivIdx-=1;
+    doCallback(i);
+  }
+}
+function initHiddenDivs(){
+  for ( var d in divs ){
+    $(divs[d]).hide();
+  }
+  $(divs[0]).show();
+}
+function setupCustomerInfo(c){
+  if ( null != c && typeof(c) != 'undefined'){
+    $("#display_name").text(c.display_name);
+    $("#current_balance").text(c.account.balance);
+    $("#address").text(c.delivery_address.formatted_address);
+    if ( c.last_ppg == null || typeof(c.last_ppg) == 'undefined' || c.last_ppg == 0){
+      c.last_ppg = 3.00;
+    }
+    $("#last_ppg").text(Number(c.last_ppg).formatMoney())
+    setupInvoice(c.id,c.account.balance,c.last_ppg);
+    updateTotals();
+    determinePage1Next();
+  }
+}
+// callback for select customer; sets up the invoice form
+function initCustomerSelection(){
+  $("#customer_select").on("change", function(e){
+    console.log(e)
+    $("#next_button").show();
+    // gets value of bulk delivery
+    var val = $("#customer_select").val();
+    // track current delivery object or at least the id
+    current_delivery_id = Number(val);
+    current_customer_id = delivery_map[current_delivery_id].customer_data.id;
+    var c = customer_map[current_customer_id];
+    setupCustomerInfo(c);
+    $(this).blur();
+  })
+  // gets value of bulk delivery
+  var val = $("#customer_select").val();
+  if ( null != val && val > 0 ){
+    // track current delivery object or at least the id
+    current_delivery_id = Number(val);
+    current_customer_id = delivery_map[current_delivery_id].customer_data.id;
+  }
+}
+// get the data id from the div
+function thisDivForDelivery(){
+  // unlock save button
+  $("#invoice_save_button").removeAttr("disabled");
+  var theId = $(this).attr("data-delivery-id");
+  try {
+    var delivery = delivery_map[theId];
+    if ( typeof delivery != 'undefined' && delivery != null && delivery.id > 0){
+      current_delivery_id = Number(delivery.id);
+      current_customer_id = Number(delivery.customer_data.id);
+      setupCustomerInfo(delivery.customer_data);
+      forward();
+    } else {
+      console.log("delivery Id invalid");
+    }
+  } catch (e) {  console.log(e); }
+}
+function deliveryDiv(data){
+  var dw = $("<div>").addClass("delivery");
+  var dd = $("<div>"); // contain details and time change div
+  dw.append(dd);
+  var display_date = data.scheduled_departure_time;
+  var display_time = "";
+  var parsed_hours = 0;
+  var parsed_minutes = 0;
+  try {
+    var date = new Date(data.scheduled_departure_time);
+    var day = slashDate(date);
+    var tt = hhmm(date);
+    parsed_hours = date.getHours();
+    parsed_minutes = date.getMinutes();
+    display_time = tt;
+    display_datetime = display_time + " " + day;
+  } catch (e) {
+    console.log("Parsing date failed " + e);
+  }
+
+  var d1=$("<div>");
+  d1.append($("<div>").text(data.customer_data.display_name));
+  d1.append($("<div>").text(data.customer_data.delivery_address.formatted_address));
+  // if clicked, allow to change time. TODO: Long press instead or swipe right etc
+  var change_time = $("<div>").addClass("time-div").text(display_datetime)
+  var change_time_button = $("<button>").text("Change")
+    .on('click',function(){
+      var p = $(this).parent();
+      p.empty();
+      p.append($("<div>").text("Currently " + display_time) );
+      p.append($("<input>").attr("type","time").attr("id","change_time_" + data.id) );
+      p.append($("<button>").attr("onclick","updateTimeFor("+data.id+")").text("Update") );
+      return false;
+    })
+  change_time.append(change_time_button);
+
+  var d2=$("<span>");
+  if (data.status != SCHEDULED){
+      d2.text("Status: " + data.status_display);
+  }
+  var d3=$("<div>").text("Current Balance: "
+    + data.customer_data.account.balance);
+
+  dd.append(d2).append(d1).append(d3);
+  dd.attr("data-delivery-id", data.id);
+  dd.on('click', thisDivForDelivery)
+  dw.append(change_time);
+
+  if (null != data.driver_notes && "" != data.driver_notes ){
+    var ddn = $("<div>").text(data.driver_notes);
+    dw.append(ddn)
+  }
+  return dw;
+}
+/**
+Update delivery time for this delivery id
+**/
+
+var SCHEDULED = 1;
+
+function updateTimeFor(delivery_id){
+  try {
+    var input_elem = $("#change_time_" + delivery_id);
+    var tt = input_elem.val();
+
+
+    // We can right away show the time change as long as the DA was stored
+    // TODO check if app etc error code
+
+    var delivery = delivery_map[delivery_id];
+    var dateobj = new Date(delivery.scheduled_departure_time);
+    var day = slashDate(dateobj);
+    var new_scheduled_departure_time = slashPlusHhmm(day,tt);
+    delivery.scheduled_departure_time = new_scheduled_departure_time;
+
+    // var requestData = {};
+    // requestData.new_scheduled_departure_time = new_scheduled_departure_time;
+    // requestData.delivery = delivery_id;
+    // requestData.updated_status = SCHEDULED;
+    // store deliveryaction now, in app, for offline synch feature
+    markDeliveryRescheduled(new_scheduled_departure_time,delivery_id);
+    // reorder the list and display
+    showByScheduledTime(delivery_map);
+
+  } catch (e) {
+    console.log(e);
+    alert("Error in date formart. Please reload.");
+  }
+  return false;
+}
+
+function sortByScheduledDate(a,b){
+  return new Date(a.scheduled_departure_time)
+     >   new Date(b.scheduled_departure_time);
+}
+
+
+/**
+take a map of delivery.id -> delivery (json data)
+and place divs in pending list in scheduled datetime order
+*/
+function showByScheduledTime(obj){
+  var result_list = [];
+  // copy to an array
+    for ( var i in obj ){
+      try {
+        result_list.push(obj[i]);
+      } catch (e){
+        console.log(e);
+      }
+    }
+    // sort
+    result_list.sort(sortByScheduledDate);
+    // loop again, clear list frist
+    $("#delivery_list").empty();
+    for ( var i in result_list ){
+      $("#delivery_list").append(deliveryDiv(result_list[i]));
+    }
+}
+
+/**
+Fetch delivery assignments & furnish the customer select element
+*/
+function fetchBulkDeliveries(){
+  // TODO Rename SF fn
+  var json_str = sfandroidapp.retrieveCachedJSON("bulk_delivery");
+  if (null == json_str){
+    // TODO: Check storage
+    // If really not found, set to empty list to avoid errors or bail now
+    json_str = "[]";
+  }
+  var obj = JSON.parse(json_str);
+  console.log("OBJ[0]: "+JSON.stringify(obj[0]))
+  if (obj.length > 0){
+    customer_map = {};
+    // initialize selected customer
+    try {
+      current_customer_id = obj[0].customer_data.id;
+    } catch (e){
+      console.log(e);
+    }
+    //$("#customer_select").empty();
+    for ( var i in obj ){
+      try {
+        var c = obj[i].customer_data;
+        customer_map[c.id] = c;
+        if ( obj[i].status == COMPLETE || obj[i].status == CANCELED ){
+          finished_delivery_map[obj[i].id] = obj[i];
+          // client wants completed list to be REVERSED so that newest completion shows first
+          $("#completed_delivery_list").prepend(deliveryDiv(obj[i]))
+        } else {
+          delivery_map[obj[i].id] = obj[i];
+          // NOTE: Customer select is a misnomer, we are selecting delivery asgnmnt model
+          $("#customer_select").append($("<option>").text(c.display_name).val(obj[i].id));
+          $("#delivery_list").append(deliveryDiv(obj[i]))
+        }
+
+      } catch (e){
+        console.log(e);
+      }
+    }
+
+
+    showByScheduledTime(delivery_map);
+
+    determinePage1Next();
+  }
+}
+
+
+function markDeliveryComplete(){
+  var d = {"delivery":Number(current_delivery_id),"updated_status":COMPLETE};
+  var key = sfandroidapp.deliveryActionPendingPOST(JSON.stringify(d));
+  if ( current_delivery_id == -1 || null == key || typeof(key)=='undefined'){
+    $("#delivery_complete_button").text("Error Saving delivery action.");
+  } else {
+    $("#delivery_complete_button").text("Success");
+  }
+}
+
+function markDeliveryRescheduled(updated_datetime, delivery_id){
+  var d = {"delivery":Number(delivery_id),"updated_status":SCHEDULED,"new_scheduled_departure_time":updated_datetime};
+  var key = sfandroidapp.deliveryActionPendingPOST(JSON.stringify(d));
+  if ( delivery_id < 1 || null == key || typeof(key)=='undefined'){
+    alert("Error Updating Time.");
+  }
+}
+
+</script>
+<script>
+  function showPaymentDialog(){
+    $(".hide_for_balance").show()
+    $("#invoice_only").hide();
+    // show all payment things
+    $(".hide_for_payment").hide();
+    $("#invoice_number").val("Payment");
+  }
+
+  function showBalanceDialog(){
+    $(".hide_for_balance").hide()
+    $("#invoice_only").hide();
+    $(".hide_for_payment").show();
+    $("#invoice_number").val("Balance");
+  }
+
+  function showInvoiceDialog(){
+    $(".hide_for_balance").show()
+    $("#invoice_only").show();
+    $(".hide_for_payment").show();
+    // title spans
+    $("span.hide_for_balance").hide()
+    $("span.hide_for_payment").hide();
+  }
+</script>
+<script>
+// we could add strings and check type in order to cast vals correctly
+var invoice_display_data = {
+  "gallons": 0.0,
+  "ppg": 3.0,
+  "extra_costs": 0.0,
+  "non_taxable_subtotal" :		0.0,
+  "taxable_subtotal" : 0.0,
+  "sales_tax": 0.0,
+  "subtotal":			0.0,
+  "current_balance":		0.0,
+  "payment_amount":		0.0,
+  "updated_balance":		0, // sub + existing - payment_amount
+  "cc_fee" :		0,
+  "total_bill_remaining":	0, // if no cc fee, same as updated balance
+  "payment_method"	: 0,
+  "payment_collected" : 0.0,
+  "subtotal_with_fees" : 0.0,
+  "pay_in_full" : 0.0,
+}
+
+// After invoice display data is updated, march these and display with text
+var money_format_display_elements = {
+  "subtotal" : ["#subtotal",]
+  , "current_balance" : ["#current_balance","#current_balance_invoice"]
+  , "payment_collected" : ["#confirm_payment_collected"]
+  ,"updated_balance" : ["#updated_balance","#current_balance_after_invoice"]
+  ,"total_bill_remaining" : ["#balance_after_payment"]
+  ,"cc_fee":["#credit_card_fee"]
+  ,"pay_in_full" :["#pay_in_full"]
+  ,"subtotal_with_fees":["#subtotal_with_fees"]
+}
+// takes val () of the element to update the corresponding invoice_display_data entry
+var invoice_data_inputs ={
+  "gallons": "#gallons"
+  , "ppg" : "#ppg"
+  , "payment_method" : "#payment_method"
+  , "extra_costs" : "#extra_costs"
+  , "payment_collected" : "#payment_collected"
+}
+// pass data to the val () of the element to update totals
+var invoice_data_outputs = {
+ // "payment_amount" : ["#payment_amount"]
+}
+
+// Prerequisite:
+// Set invoice_display_data["payment_amount"]
+// may do this from i.e. updatePaymentCollected, or updatePaymentAmount
+function updateTotals(){
+  var key, val, element, element_list, idx;
+  // grab the values of all the expected inputs that contribute to the subtotals
+  for ( key in invoice_data_inputs ) {
+    // get val
+    try {
+      // use jquery selector to fetch that element
+      val = Number($(invoice_data_inputs[key]).val());
+      if ( isNaN(val) ){ val = 0.0; }
+      // store val in display
+      invoice_display_data[key] = val;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  // ones that need to be calculated go here
+  var gallons = isNaN(Number(invoice_display_data["gallons"])) ? 0.0 : Number(invoice_display_data["gallons"]);
+  var ppg =  round(isNaN(Number(invoice_display_data["ppg"])) ? 0.0 : Number(invoice_display_data["ppg"]),2);
+  var extra_costs = isNaN(Number(invoice_display_data["extra_costs"])) ? 0.0 : Number(invoice_display_data["extra_costs"]);
+  var payment =  isNaN(Number(invoice_display_data["payment_amount"])) ? 0.0 : Number(invoice_display_data["payment_amount"]);
+
+  invoice_display_data["subtotal"] = moneyMultiply(gallons, ppg) + round(extra_costs);
+  var updated_balance = invoice_display_data["updated_balance"] = invoice_display_data["subtotal"]
+    + invoice_display_data["current_balance"]
+    - payment;
+
+
+  invoice_display_data["pay_in_full"] = Math.max(invoice_display_data["subtotal"]
+    + invoice_display_data["current_balance"], 0)
+
+  // ["cc_fee"] repr the cc fee charged against the ACTUAL payment AMOUNT, not collected and not not subtotal
+  if( Number(invoice_display_data["payment_method"]) === PAID_CREDIT_CARD ){
+    invoice_display_data["cc_fee"] = moneyMultiply(payment,0.03);
+    invoice_display_data["pay_in_full"] = moneyMultiply(invoice_display_data["pay_in_full"], 1.03);
+  } else {
+    invoice_display_data["cc_fee"] = 0.0
+  }
+
+  invoice_display_data["total_bill_remaining"] = invoice_display_data["subtotal"]
+    + invoice_display_data["current_balance"]
+    + invoice_display_data["cc_fee"]
+    - invoice_display_data["payment_collected"];
+
+
+  invoice_display_data["subtotal_with_fees"] =
+      invoice_display_data["subtotal"]   + invoice_display_data["cc_fee"]
+
+  // loop elements and display them
+  for ( key in money_format_display_elements ) {
+    // get val
+    element_list = money_format_display_elements[key];
+    // show val in output elements
+    val = invoice_display_data[key]
+    for ( idx in element_list ){
+      element_id = element_list[idx]
+      $(element_id).text(val.formatMoney()) //invoice_display_data[key] = val;
+    }
+  }
+}
+
+
+// Get payment collected and then set payment_amount
+function updatePaymentCollected(){
+  var pc,method,payment_amount;
+  try {
+    pc = Number($("#payment_collected").val());
+    method = Number($("#payment_method").val());
+    payment_amount = pc;
+    if ( method == PAID_CREDIT_CARD ){
+      payment_amount /= 1.03;
+      // var cc_fee = payment_amount * 0.03;
+    }
+    invoice_display_data["payment_amount"] = payment_amount;
+    $("#payment_amount").val(payment_amount.formatMoney(2,"","."));
+  } catch (e) {  console.log(e); }
+
+  updateTotals();
+}
+
+// Get payment_amount and then set payment collected
+// Must store invoice_display_data["payment_amount"] to work w updateTotals
+function updatePaymentAmount(){
+  var pc,method,payment_amount;
+  try {
+    // pc = Number($("#payment_collected").val());
+    method = Number($("#payment_method").val());
+    payment_amount = Number($("#payment_amount").val())
+    pc = payment_amount;
+    if ( method == PAID_CREDIT_CARD ){
+      pc = moneyMultiply(pc,1.03);
+      // var cc_fee = payment_amount * 0.03;
+    }
+    // invoice_display_data["payment_collected"] = pc;
+    invoice_display_data["payment_amount"] = payment_amount;
+    // Do not use thouSeparator "," and we can just cast the float from str
+    $("#payment_collected").val(pc.formatMoney(2,"","."));
+  } catch (e) {  console.log(e); }
+
+  updateTotals();
+}
+var CREDIT_FEE_PERCENT = 0.03;
+var PAID_CREDIT_CARD = 2;
+var PAID_CHECK = 1;
+var PAID_CASH = 0;
+
+function error(jqXHR, textStatus, errorThrown) {
+    var data = jqXHR.responseText;
+    $("#status").text("Error; enter required fields. " + textStatus).addClass("panel-danger").removeClass("panel-success");
+}
+
+// TODO: Cleanup account_pk is un-used
+function driverHandleInvoice(){
+  $("#invoice_save_button").attr("disabled", "disabled");
+  handleInvoice(null, current_customer_id);
+  return false; // prevent bubble
+}
+// Changed fro driver
+function handleInvoice(account_pk, customer_id){
+  // TODO: When we want a fallback option that circumvents storage: var url = SFmakeSeverUrl("/api/invoice/");
+  var data = {};
+  var paid = Number.NaN;
+  try {
+    paid = Number($("#payment_amount").val());
+  }
+  catch (e) {
+    //paid = 0.0;
+  } finally {
+    if (isNaN(paid)){
+      paid = 0.0;
+    }
+  }
+  // var payment_method = $("#payment_method").val();
+  var check_number = $("#check_number").val();
+  var invoice_number = $("#invoice_number").val();
+  var day = $("#invoice_date").val();
+  var extras = $("#extras").val();
+  var start_pct = $("#start_pct").val() | 0;
+  var end_pct = $("#end_pct").val() | 0;
+
+  var cpt = $("input#check_pressure_test").is(":checked");
+  var cpc = $("input#check_please_call").is(":checked");
+  var ctvo = $("input#check_tank_valve_off").is(":checked");
+  var notes_for_customer = $("#notes_for_customer").val();
+
+  data.created = new Date().toISOString();
+  data.paid = paid;
+  data.payment_collected = round(invoice_display_data["payment_collected"],2)
+  data.cc_fee = round(invoice_display_data["cc_fee"],2)
+  data.extras = extras;
+  data.gallons = round(invoice_display_data["gallons"],2);
+  data.ppg = round(invoice_display_data["ppg"], 2);
+  data.extra_costs = round(invoice_display_data["extra_costs"],2);
+  data.subtotal = round(invoice_display_data["subtotal"],2);
+  data.customer = Number(customer_id);
+  data.invoice_date = day;
+  data.payment_method = invoice_display_data["payment_method"]
+  data.check_number = check_number;
+  data.invoice_number = invoice_number;
+  // Offline invoices need this (subset of this at least) but server ignores it
+
+  data.customer_data = customer_map[customer_id]; // reference
+  // make current balance reflect amount - paid for offline invoices
+  data.previous_balance = data.customer_data.account.balance; // copy by value
+  data.updated_balance = invoice_display_data["updated_balance"];
+  // make customer account look right while offline
+  data.customer_data.account.balance = invoice_display_data["updated_balance"];
+  // keep track of the related delivery
+  data.delivery = current_delivery_id;
+  data.customer_data.last_ppg = data.ppg; //invoice_display_data["ppg"];
+  data.start_pct = start_pct;
+  data.end_pct = end_pct;
+  data.check_pressure_test = cpt;
+  data.check_please_call = cpc;
+  data.check_tank_valve_off = ctvo;
+  data.notes_for_customer = notes_for_customer;
+
+  printable_invoice_key = SFStoreInvoice(data);
+  var invoice_key = printable_invoice_key;
+  // TODO: Handle case where android doesnt let us store it
+  if (invoice_key == null || typeof(invoice_key) == 'undefined' || invoice_key == ""){
+    console.log("ERROR: Android rejected storage of invoice!");
+    $("#end_status").text("FATAL Error: Could not store the invoice.");
+  }
+  forward();
+  resetInvoiceFormFields();
+  updateAfterInvoiceSuccess(data.updated_balance, data.ppg);
+}
+function updateAfterInvoiceSuccess(account_balance,last_ppg){
+
+  var a = account_balance;
+  if ( typeof(a) == 'undefined' ){
+    a = Number(0);
+  }
+  $("#current_balance").text(a.formatMoney());
+  $("#current_balance_invoice").text(a.formatMoney());
+  $("#current_balance_after_invoice").text(a.formatMoney());
+  // FR: Show current balance in invoice / credit / etc message
+  var t = $("<h4>").text("Current Balance: $" + a.formatMoney());
+  $("#invoice_message").append(t);
+  _current_balance = a;
+  // for customer details
+  $("#last_ppg").text(Number(last_ppg).formatMoney())
+  $("#ppg").val(Number(last_ppg).formatMoney())
+
+}
+function resetInvoiceFormFields(){
+  $("#check_number").val("");
+  $("#invoice_number").val("");
+  // get and set date: $("#invoice_date").val();
+  $("#payment_amount").val("");
+  $("#payment_collected").val("");
+  $("#extras").val("");
+  for ( key in invoice_data_inputs ) {
+    // get val
+    try {
+      $(invoice_data_inputs[key]).val("")
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  $("updated_balance").val(0);
+  $("balance_after_payment").val(0)
+  $("#payment_method").val(0);
+  updateTotals();
+}
+
+
+// We need this information to furnish an invoice correctly
+function setupInvoice(customer_pk, customer_balance, last_ppg){
+  resetInvoiceFormFields();
+  invoice_display_data["ppg"] = last_ppg;
+  $("#ppg").val(last_ppg);
+  current_customer_id = Number(customer_pk);
+  invoice_display_data["current_balance"] = customer_balance;
+}
+
+function cancelInvoice(){
+  showInvoiceSave(); // reset form stuff ... maybe only used to clear message at this point...
+  resetInvoiceFormFields(); // reset other stuff
+}
+
+function showInvoiceSave(){
+    $("#invoice_form").show();
+    $("#invoice_save_button").show();
+    $("#invoice_message").text("");
+}
+
+// Paying with CC, add a line item for CC fee
+// CC fee stored into payment as optional balancedue
+function handlePaymentMethodChange(e){
+  updatePaymentCollected();
+  $("#check_number_display").hide();
+  $("#invoice_credit_card_info").hide();
+  var method = Number($("#payment_method").val());
+  if ( method == PAID_CHECK ){
+    $("#check_number_display").show();
+  } else if ( method == PAID_CREDIT_CARD ){
+    $("#invoice_credit_card_info").show();
+  }
+}
+// MUST return MM/DD/YYYY
+function getTodayFormatted(){
+  var d = new Date();
+  var month = d.getMonth()+1;
+  if (month < 10){
+    month = "0" + String(month);
+  } else {
+    month = String(month)
+  }
+  var day = d.getDate();
+  if (day < 10){
+    day = "0" + String(day);
+  } else {
+    day = String(day)
+  }
+  var date_shown = month + "/" + day + "/" + d.getFullYear();
+  return date_shown;
+}
+</script>
+<script>
+
+// Call when select changed or loading
+function determinePage1Next(){
+  var selected = current_customer_id;
+  if ( selected == -1 || current_delivery_id == -1){
+      // hide page 1 buttons
+      $("#next_button").hide();
+      $("#next_button_page_1").hide();
+  } else {
+    // enable page 1 next_button
+    $("#next_button").show();
+    $("#next_button_page_1").show();
+  }
+}
+
+// INIT
+$(function(){
+  $("#invoice_credit_card_info").hide();
+  $("input.calc_total").on("input focusout change",function(){
+    updateTotals();
+  });
+  $("input.auto_highlight").click(function() {
+    if(!$(this).hasClass("selected")) {
+        $(this).select();
+        $(this).addClass("selected");
+    }
+  });
+  $("input.auto_highlight").blur(function() {
+      if($(this).hasClass("selected")) {
+          $(this).removeClass("selected");
+      }
+  });
+  $("#check_number_display").hide();
+  $("#ppg").val(invoice_display_data["ppg"]);
+  $("select#payment_method").on("input focusout", handlePaymentMethodChange)
+  // $("input#invoice_date").datepick({showAnim: ''}); // Immediate
+  $("input#invoice_date").val(getTodayFormatted());
+  updateTotals();
+
+  // for android local version
+  fetchBulkDeliveries();
+  initHiddenDivs();
+  initCustomerSelection();
+  // should hide customer buttons
+  determinePage1Next();
+  var c = customer_map[current_customer_id];
+  setupCustomerInfo(c);
+})
+</script>
+<!-- email -->
+<script>
+/**
+If a user does not have an email, asks for one.
+If has one, asks if should send email.
+Will NOT email if already in the emailedMap
+*/
+var theEmailedAlreadyMap = {}; // temp soln until the server handle duplicate email requests properly
+
+function checkEmail(){
+  var c = customer_map[current_customer_id];
+  // bail if we already sent
+  if ( null != theEmailedAlreadyMap[current_customer_id] ){
+    window.alert("Already emailed this invoice.");
+    return;
+  }
+  if (!sfandroidapp.online()){
+    alert("Cannot do emails while offline.");
+    return;
+  }
+  // if has email, send, if not, prompt
+  let email;
+  if (null == c.detail_info || !validateEmail(c.detail_info.billing_email)){
+    email = window.prompt("Please enter the new email address for "
+      + c.display_name + ".");
+    if ( email != null ){
+      if ( validateEmail(email) ){
+        c.detail_info.billing_email = email;
+        // returns false if not connected
+        sendNewEmailPatch(current_customer_id, email);
+      } else {
+          window.alert("Invalid email \""+email+"\", try again.");
+      }
+    } else {
+      // cancelled
+    }
+  } else {
+    askSendEmail(email);
+  }
+}
+
+function sendNewEmailPatch(current_customer_id, email){
+  sfandroidapp.sendNewEmailPatch(current_customer_id, email);
+}
+
+function askSendEmail(unused){
+
+  let verboseAddress = null;
+  try {
+    verboseAddress = customer_map[current_customer_id].detail_info.billing_email;
+  } catch (e) {
+
+  }
+  if ( null == verboseAddress){
+    msg = "Send email receipt?";
+  } else {
+    msg = "Send email receipt to " + verboseAddress + "?";
+  }
+  let do_email = window.confirm(msg);
+  if (do_email && null == theEmailedAlreadyMap[current_customer_id]){
+    console.log(`Emailing to customer id ${current_customer_id} at ${verboseAddress}`);
+    // this needs to show an error if the server id could not be fetched.
+    // WHen the invoice is saved we should be synchign right away so by now we have
+    // the true id in local storage
+    console.log("Using printable ID printable_invoice_key");
+    let emailError = sfandroidapp.sendInvoiceEmail(printable_invoice_key);
+    if (emailError != null){
+      alert(emailError)
+      return;
+    }
+    theEmailedAlreadyMap[current_customer_id] = true;
+  } else {
+    alert("Email receipt NOT sent.");
+  }
+}
+// Use from app to show html over button
+// function showEmailResult(result){
+//   document.getElementById("emailresult").innerHTML = result;
+// }
+</script>
+</html>
